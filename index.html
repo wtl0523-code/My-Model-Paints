@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>我的模型漆管理系統 (純淨無幻覺版)</title>
+    <title>我的模型漆管理系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
@@ -12,9 +12,10 @@
         #drawer { transition: transform 0.3s ease-in-out; z-index: 1000; }
         #drawer.closed { transform: translateX(-100%); }
         #drawer-overlay { transition: opacity 0.3s ease-in-out; z-index: 999; }
-        .paint-card { transition: all 0.2s ease-in-out; }
-        .paint-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1); }
+        .paint-card { transition: all 0.2s ease-in-out; min-height: 180px; }
+        .paint-card:hover { transform: translateY(-2px); box-shadow: 0 8px 15px -5px rgba(0, 0, 0, 0.1); }
         
+        /* 標籤樣式 */
         .tag-白 { background-color: #ffffff; color: #475569; border: 1px solid #e2e8f0; }
         .tag-土 { background-color: #92400e; color: #ffffff; }
         .tag-黑 { background-color: #0f172a; color: #ffffff; }
@@ -30,8 +31,8 @@
         .tag-T { background-color: #06b6d4; color: #ffffff; }
         .tag-default { background-color: #94a3b8; color: #ffffff; }
 
-        .fs-swatch { width: 60px; height: 26px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.15); margin-left: 12px; flex-shrink: 0; box-shadow: inset 0 0 2px rgba(0,0,0,0.1); cursor: pointer; }
-        .brand-swatch { width: 44px; height: 22px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); margin-left: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; background: #f8fafc; }
+        .fs-swatch { width: 50px; height: 22px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.15); flex-shrink: 0; cursor: pointer; }
+        .brand-swatch { width: 36px; height: 18px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.1); margin-left: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #94a3b8; background: #f8fafc; }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -43,119 +44,115 @@
 
     <div id="drawer-overlay" class="fixed inset-0 bg-black opacity-0 pointer-events-none hidden transition-opacity duration-300"></div>
 
-    <aside id="drawer" class="fixed top-0 left-0 h-full w-80 bg-white shadow-2xl closed overflow-y-auto">
-        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-            <h2 class="text-xl font-black text-slate-800">系統選單</h2>
-            <button onclick="toggleDrawer()" class="text-slate-400 hover:text-slate-600">✕</button>
+    <!-- 側邊選單 -->
+    <aside id="drawer" class="fixed top-0 left-0 h-full w-72 bg-white shadow-2xl closed overflow-y-auto">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="text-lg font-black text-slate-800">系統選單</h2>
+            <button onclick="toggleDrawer()" class="text-slate-400 hover:text-slate-600 p-2">✕</button>
         </div>
-        <div class="p-4 space-y-2">
-            <button onclick="openAddModal()" class="w-full text-left px-4 py-4 rounded-xl hover:bg-blue-50 text-blue-600 font-bold flex items-center gap-3 transition-colors border border-blue-100 shadow-sm">
+        <div class="p-4 space-y-3">
+            <button onclick="openAddModal()" class="w-full text-left px-4 py-3 rounded-xl hover:bg-blue-50 text-blue-600 font-bold flex items-center gap-3 transition-colors border border-blue-100 shadow-sm">
                 <span class="text-lg">➕</span> 新增單筆漆料
             </button>
-            <div class="h-px bg-slate-100 my-4"></div>
-            <div class="px-4 py-2">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">資料庫管理 (CSV)</p>
-                <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-4">
-                    <label class="text-xs font-bold text-blue-800 block mb-2">匯入您的檔案 (將覆蓋現有資料)</label>
-                    <select id="encoding-selector" class="w-full text-xs bg-white border border-blue-200 rounded-lg px-2 py-2 mb-2 outline-none cursor-pointer">
+            <div class="h-px bg-slate-100 my-2"></div>
+            <div class="px-2">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">資料庫管理 (CSV)</p>
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4">
+                    <label class="text-[11px] font-bold text-blue-800 block mb-2">匯入檔案 (覆蓋)</label>
+                    <select id="encoding-selector" class="w-full text-xs bg-white border border-blue-200 rounded-lg px-2 py-2 mb-2 outline-none">
                         <option value="utf-8">UTF-8 編碼 (推薦)</option>
-                        <option value="big5">Big5 編碼 (Excel 存檔專用)</option>
+                        <option value="big5">Big5 編碼 (Excel)</option>
                     </select>
                     <input type="file" id="csv-upload" accept=".csv" class="hidden">
-                    <button onclick="document.getElementById('csv-upload').click()" class="w-full bg-blue-600 text-white py-2.5 rounded-xl font-bold text-sm shadow-md hover:bg-blue-700 transition-colors">📂 選擇 CSV 檔案匯入</button>
+                    <button onclick="document.getElementById('csv-upload').click()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold text-xs shadow hover:bg-blue-700">選擇 CSV 檔案</button>
                 </div>
-                <button onclick="exportCSV()" class="w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-700 font-bold flex items-center gap-3 transition-colors border border-slate-200">
-                    📥 匯出當前庫存 (備份)
+                <button onclick="exportCSV()" class="w-full text-left px-4 py-2 rounded-xl hover:bg-slate-50 text-slate-700 font-bold flex items-center gap-3 transition-colors border border-slate-100 text-sm">
+                    📥 匯出庫存 (備份)
                 </button>
             </div>
-            <div class="h-px bg-slate-100 my-4"></div>
-            <button onclick="clearStorage()" class="w-full text-left px-4 py-3 rounded-xl hover:bg-red-50 text-red-500 font-bold flex items-center gap-3 transition-colors">
+            <div class="h-px bg-slate-100 my-2"></div>
+            <button onclick="clearStorage()" class="w-full text-left px-4 py-2 rounded-xl hover:bg-red-50 text-red-500 font-bold flex items-center gap-3 transition-colors text-sm">
                 🗑️ 清空所有資料
             </button>
         </div>
     </aside>
 
-    <main class="max-w-7xl mx-auto p-4 md:p-8">
-        <header class="mb-8 flex items-center gap-4">
-            <button onclick="toggleDrawer()" class="p-4 bg-white rounded-2xl shadow-sm hover:bg-slate-50 border border-slate-200 transition-colors">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+    <main class="max-w-7xl mx-auto p-3 md:p-8">
+        <header class="mb-4 flex items-center gap-3">
+            <button onclick="toggleDrawer()" class="p-3 bg-white rounded-xl shadow-sm hover:bg-slate-50 border border-slate-200 transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
-            <h1 class="text-2xl md:text-3xl font-black text-slate-800">模型漆管理系統</h1>
+            <h1 class="text-xl md:text-2xl font-black text-slate-800">模型漆管理</h1>
         </header>
 
-        <!-- 歡迎/空狀態畫面 (未匯入資料時顯示) -->
-        <div id="welcome-state" class="hidden text-center py-24 bg-white rounded-3xl border border-slate-200 shadow-sm mb-8">
-            <div class="text-6xl mb-6">📂</div>
-            <h2 class="text-2xl font-black text-slate-800 mb-2">資料庫目前是空的</h2>
-            <p class="text-slate-500 mb-8 max-w-md mx-auto">為了確保資料 100% 準確，系統已清空所有預設項目。請匯入您的「我的模型漆.csv」來建立專屬資料庫。</p>
-            <button onclick="toggleDrawer()" class="bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black shadow-lg hover:bg-blue-700 transition-transform active:scale-95">
-                開啟選單匯入 CSV
+        <!-- 空狀態 -->
+        <div id="welcome-state" class="hidden text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm mb-6">
+            <div class="text-5xl mb-4">📂</div>
+            <h2 class="text-xl font-black text-slate-800 mb-2">資料庫是空的</h2>
+            <p class="text-slate-500 text-sm mb-6 px-6">請點擊選單匯入您的「我的模型漆.csv」。</p>
+            <button onclick="toggleDrawer()" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-black shadow-lg hover:bg-blue-700">
+                匯入資料
             </button>
         </div>
 
         <div id="main-content" class="hidden">
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                    <p class="text-slate-400 text-xs font-bold uppercase mb-1">總在庫數量</p>
-                    <p id="total-count" class="text-3xl font-black text-blue-600">0</p>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+                    <p class="text-slate-400 text-[9px] font-bold uppercase mb-1">總在庫</p>
+                    <p id="total-count" class="text-2xl font-black text-blue-600 leading-none">0</p>
                 </div>
-                <div id="brand-stats" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 col-span-1 md:col-span-4 flex items-center overflow-x-auto whitespace-nowrap gap-3 no-scrollbar"></div>
+                <div id="brand-stats" class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 col-span-1 md:col-span-4 flex items-center overflow-x-auto whitespace-nowrap gap-2 no-scrollbar"></div>
             </div>
 
-            <div class="bg-white p-4 rounded-2xl shadow-md border border-slate-100 mb-8 flex flex-col md:flex-row gap-4 sticky top-4 z-10">
+            <!-- 搜尋與過濾 -->
+            <div class="bg-white p-3 rounded-xl shadow-md border border-slate-100 mb-4 flex flex-col gap-2 sticky top-2 z-10">
                 <div class="relative flex-1">
-                    <span class="absolute left-3 top-3.5 text-slate-400">🔍</span>
-                    <input type="text" id="search-input" placeholder="搜尋編號、廠牌或名稱..." class="w-full pl-10 pr-4 py-3.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500">
+                    <span class="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
+                    <input type="text" id="search-input" placeholder="搜尋編號、廠牌..." class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div class="flex gap-2">
-                    <select id="brand-filter" class="px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-700 cursor-pointer min-w-[120px]">
+                    <select id="brand-filter" class="flex-1 px-2 py-2 text-xs rounded-lg border border-slate-200 bg-slate-50 font-bold text-slate-700 outline-none">
                         <option value="">所有品牌</option>
                     </select>
-                    <select id="color-filter" class="px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-700 cursor-pointer min-w-[120px]">
+                    <select id="color-filter" class="flex-1 px-2 py-2 text-xs rounded-lg border border-slate-200 bg-slate-50 font-bold text-slate-700 outline-none">
                         <option value="">所有分類</option>
                     </select>
                 </div>
             </div>
 
-            <div id="paint-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
-            <div id="empty-state" class="hidden text-center py-32">
-                <div class="text-6xl mb-4">🎨</div>
-                <p class="text-slate-400 text-xl font-medium">找不到相符的漆料</p>
+            <div id="paint-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
+            <div id="empty-state" class="hidden text-center py-20">
+                <p class="text-slate-400 text-sm font-medium">沒有找到相符的漆料</p>
             </div>
         </div>
     </main>
 
-    <input type="color" id="global-color-picker" class="hidden">
+    <input type="color" id="global-color-picker" style="position: absolute; left: -9999px; opacity: 0; width: 1px; height: 1px;">
 
+    <!-- 新增 Modal -->
     <div id="add-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-[2000]">
-        <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="text-xl font-black text-slate-800">新增單筆漆料</h3>
-                <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600 text-2xl">✕</button>
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="text-lg font-black text-slate-800">新增漆料</h3>
+                <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600 text-xl">✕</button>
             </div>
-            <form id="add-paint-form" class="p-6 space-y-4 overflow-y-auto max-h-[80vh]">
-                <div class="grid grid-cols-2 gap-4">
+            <form id="add-paint-form" class="p-5 space-y-3 overflow-y-auto max-h-[75vh]">
+                <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-xs font-bold text-slate-500 block mb-1">廠牌*</label>
-                        <!-- 使用 list 屬性綁定 datalist，讓廠牌可以選也可以輸入 -->
-                        <input name="brand" list="brand-list" required placeholder="選擇或輸入" class="w-full border border-slate-200 rounded-xl px-4 py-3">
-                        <datalist id="brand-list">
-                            <!-- 這裡的選項會在點擊新增按鈕時，由 JS 動態載入目前已有的廠牌 -->
-                        </datalist>
+                        <label class="text-[11px] font-bold text-slate-500 block mb-1">廠牌*</label>
+                        <input name="brand" list="brand-list" required placeholder="選擇或輸入" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                        <datalist id="brand-list"></datalist>
                     </div>
-                    <div><label class="text-xs font-bold text-slate-500 block mb-1">編號*</label><input name="code" required placeholder="A.MIG-202" class="w-full border border-slate-200 rounded-xl px-4 py-3"></div>
+                    <div><label class="text-[11px] font-bold text-slate-500 block mb-1">編號*</label><input name="code" required placeholder="XF-1" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
                 </div>
-                <div><label class="text-xs font-bold text-slate-500 block mb-1">名稱*</label><input name="name" required class="w-full border border-slate-200 rounded-xl px-4 py-3"></div>
-                <div>
-                    <label class="text-xs font-bold text-slate-500 block mb-1">用途</label>
-                    <input name="usage" placeholder="例如：USAF 越戰褐色、二戰德軍" class="w-full border border-slate-200 rounded-xl px-4 py-3">
+                <div><label class="text-[11px] font-bold text-slate-500 block mb-1">名稱*</label><input name="name" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+                <div><label class="text-[11px] font-bold text-slate-500 block mb-1">用途</label><input name="usage" placeholder="例如：飛機蒙皮" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-[11px] font-bold text-slate-500 block mb-1">分類</label><select name="colorFamily" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none"><option value="灰">灰</option><option value="土">土</option><option value="白">白</option><option value="黑">黑</option><option value="銀">銀</option><option value="金">金</option><option value="藍">藍</option><option value="紅">紅</option><option value="綠">綠</option><option value="黃">黃</option><option value="P">底漆</option><option value="M">溶劑</option><option value="T">工具</option><option value="其他">其他</option></select></div>
+                    <div><label class="text-[11px] font-bold text-slate-500 block mb-1">數量</label><input name="qty" type="number" value="1" min="0" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="text-xs font-bold text-slate-500 block mb-1">分類</label><select name="colorFamily" class="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none"><option value="灰">灰</option><option value="土">土</option><option value="白">白</option><option value="黑">黑</option><option value="銀">銀</option><option value="金">金</option><option value="藍">藍</option><option value="紅">紅</option><option value="綠">綠</option><option value="黃">黃</option><option value="P">底漆</option><option value="M">溶劑</option><option value="T">工具</option><option value="其他">其他</option></select></div>
-                    <div><label class="text-xs font-bold text-slate-500 block mb-1">數量</label><input name="qty" type="number" value="1" min="0" class="w-full border border-slate-200 rounded-xl px-4 py-3"></div>
-                </div>
-                <div><label class="text-xs font-bold text-slate-500 block mb-1">標準色號 (如有 FS 色號)</label><input name="stdColor" placeholder="FS30219" class="w-full border border-slate-200 rounded-xl px-4 py-3"></div>
-                <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg hover:bg-blue-700 mt-4 active:scale-95 transition-transform">確定新增</button>
+                <div><label class="text-[11px] font-bold text-slate-500 block mb-1">標準色號 (FSXXXXX)</label><input name="stdColor" placeholder="FS36231" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"></div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black shadow hover:bg-blue-700 transition-all mt-2 active:scale-95">確定新增</button>
             </form>
         </div>
     </div>
@@ -164,13 +161,13 @@
         const STORAGE_KEY = 'model_paints_final_clean';
         const COLOR_CACHE_KEY = 'model_paints_final_colors';
 
-        // 徹底清空預設資料！一切以使用者匯入的 CSV 為準。
         let paints = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         
-        // 🚀 【嚴謹校正】從您提供的 fs color.pdf 文件與 FS595C 標準中提取的精準色碼庫。
-        // 包含原本缺失的色號、各類藍色系、灰色系、綠色系，杜絕 AI 幻覺。
+        // ==========================================
+        // 🎨 終極精準色碼庫：全面重建 Vallejo 色碼 + FS 標準色
+        // ==========================================
         const defaultColorCache = {
-            // -- PDF 提取的色號與常見模型標準色號 --
+            // [FS 色碼] (保留)
             "FS34533": "#9db2a4", "FS34540": "#a1b897", "FS34554": "#a3bda8", "FS34558": "#a2bca6",
             "FS34583": "#aebda4", "FS34666": "#a1b9a8", "FS34670": "#a5b9a4", "FS34872": "#cbd2c5",
             "FS35042": "#242f3d", "FS35044": "#252b36", "FS35045": "#293240", "FS35050": "#1b335f",
@@ -185,41 +182,193 @@
             "FS37150": "#888d90", "FS37128": "#787a7e", "FS37200": "#9da0a3", "FS37722": "#d8d8d4",
             "FS37769": "#dedad4", "FS37776": "#e0ddd9", "FS37855": "#ebe3d4", "FS37875": "#f2f4f4",
             "FS37886": "#e6e5dd", "FS37925": "#ffffff", "FS38903": "#e0dbce", "FS38913": "#d7d1c3",
-
-            // -- 您先前要求的常見色號 --
             "FS26231": "#777b7e", "FS26373": "#bac0c5", "FS36118": "#4c5359", "FS36440": "#b5b8b8",
             "FS36495": "#d2d4d6", "FS34098": "#475249", "FS35095": "#425c78", "FS30219": "#a88366",
             "FS34102": "#515f43", "FS34079": "#3c4035", "FS34227": "#799071", "FS34092": "#38433c",
             "FS36081": "#42474a", "FS36270": "#8b8f94", "FS36375": "#a6adb5", "FS36320": "#91989f",
             "FS36473": "#bfc5c7", "FS36463": "#bcc2c6", "FS36293": "#c2c3c3", "FS34086": "#4a4a44",
 
-            // -- 各家廠牌標準色對照 --
-            "Ammo-A.MIG-202": "#a88366", "Vallejo-71.125": "#a88366", "Tamiya-XF-52": "#71523c",
-            "Vallejo-70.875": "#71523c", "Vallejo-70.955": "#ffcc99", "Vallejo-71.279": "#f2f4f4",
-            "Vallejo-70.951": "#ffffff", "Ammo-A.MIG-242": "#e6e5dd", "Ammo-A.MIG-203": "#3c4035",
-            "Ammo-A.MIG-210": "#799071", "Ammo-A.MIG-244": "#515f43", "Ammo-A.MIG-243": "#38433c",
-            "Vallejo-71.016": "#515f43", "Vallejo-71.092": "#3c4035", "Vallejo-71.096": "#4b5320",
-            "Vallejo-71.011": "#3c4035", "Vallejo-71.025": "#cda434", "Vallejo-71.043": "#4b5320",
-            "Vallejo-71.044": "#8a8b84", "Vallejo-70.843": "#d2b48c", "Vallejo-70.886": "#a9b2a1",
-            "Vallejo-70.889": "#5c5340", "Vallejo-70.890": "#515f43", "Vallejo-70.891": "#4b5320",
-            "Vallejo-70.909": "#e34234", "Vallejo-70.916": "#e6c280", "Vallejo-70.917": "#f5f5dc",
-            "Vallejo-71.056": "#42474a", "Vallejo-71.057": "#1e1e1e", "Vallejo-71.063": "#c0c0c0",
-            "Vallejo-71.277": "#777b7e", "Vallejo-71.307": "#a6adb5", "Vallejo-71.121": "#b5b8b8",
-            "Vallejo-70.950": "#1e1e1e", "Vallejo-71.271": "#5d6063", "Vallejo-70.990": "#bfc5c7",
-            "Vallejo-70.991": "#bcc2c6", "Vallejo-70.992": "#8b8f94", "Vallejo-70.993": "#c2c3c3",
-            "Vallejo-70.994": "#5c5e60", "Vallejo-70.995": "#42474a", "Vallejo-77.701": "#d3d4d5",
+            // ==========================================
+            // [Vallejo - Model Color (70.xxx)] 從 PDF 重新萃取
+            // ==========================================
+            "Vallejo-70.790": "#E3E6E8", "Vallejo-70.800": "#596167", "Vallejo-70.801": "#A28345",
+            "Vallejo-70.802": "#E0C8A0", "Vallejo-70.803": "#D1888F", "Vallejo-70.804": "#CC4648",
+            "Vallejo-70.805": "#CC6C3F", "Vallejo-70.806": "#E6D76D", "Vallejo-70.807": "#2E587F",
+            "Vallejo-70.808": "#5A9E85", "Vallejo-70.809": "#355776", "Vallejo-70.810": "#633B76",
+            "Vallejo-70.811": "#433B77", "Vallejo-70.812": "#BD4F5D", "Vallejo-70.814": "#87322F",
+            "Vallejo-70.815": "#E8B499", "Vallejo-70.816": "#4B8FB2", "Vallejo-70.817": "#B93231",
+            "Vallejo-70.818": "#863630", "Vallejo-70.819": "#DAC5AB", "Vallejo-70.820": "#EAE8D8",
+            "Vallejo-70.821": "#CAB68E", "Vallejo-70.822": "#3B3330", "Vallejo-70.823": "#4B5745",
+            "Vallejo-70.824": "#DD9144", "Vallejo-70.825": "#D0A481", "Vallejo-70.826": "#755541",
+            "Vallejo-70.827": "#A12526", "Vallejo-70.828": "#78654C", "Vallejo-70.829": "#952D2B",
+            "Vallejo-70.830": "#5A6749", "Vallejo-70.831": "#63605C", "Vallejo-70.832": "#627848",
+            "Vallejo-70.833": "#6E8148", "Vallejo-70.834": "#B99F7B", "Vallejo-70.835": "#DEA282",
+            "Vallejo-70.836": "#8B8C8A", "Vallejo-70.837": "#D8C5B3", "Vallejo-70.838": "#3B7A5C",
+            "Vallejo-70.839": "#3F464C", "Vallejo-70.840": "#9BCFCF", "Vallejo-70.841": "#477AA3",
+            "Vallejo-70.842": "#E8F5F5", "Vallejo-70.843": "#B18F6A", "Vallejo-70.844": "#4E708C",
+            "Vallejo-70.845": "#D2C3B2", "Vallejo-70.846": "#6F5B4A", "Vallejo-70.847": "#A38D6C",
+            "Vallejo-70.850": "#596155", "Vallejo-70.851": "#EF8734", "Vallejo-70.852": "#484F4E",
+            "Vallejo-70.853": "#E9F0F1", "Vallejo-70.854": "#675B48", "Vallejo-70.855": "#343C3A",
+            "Vallejo-70.856": "#AA9A78", "Vallejo-70.857": "#716346", "Vallejo-70.858": "#DCE0CA",
+            "Vallejo-70.859": "#3B2E2A", "Vallejo-70.860": "#C7A685", "Vallejo-70.861": "#1E1E1E",
+            "Vallejo-70.862": "#3A3F44", "Vallejo-70.863": "#454749", "Vallejo-70.864": "#878C8F",
+            "Vallejo-70.865": "#6B7075", "Vallejo-70.866": "#616A65", "Vallejo-70.867": "#576167",
+            "Vallejo-70.868": "#4A5752", "Vallejo-70.869": "#4A5257", "Vallejo-70.870": "#6D7479",
+            "Vallejo-70.871": "#4C3C35", "Vallejo-70.872": "#453A34", "Vallejo-70.873": "#605649",
+            "Vallejo-70.874": "#6F5A46", "Vallejo-70.875": "#7C5C43", "Vallejo-70.876": "#685343",
+            "Vallejo-70.877": "#887455", "Vallejo-70.878": "#A48F68", "Vallejo-70.879": "#66543D",
+            "Vallejo-70.880": "#7C7764", "Vallejo-70.881": "#6D7253", "Vallejo-70.882": "#7D7551",
+            "Vallejo-70.883": "#8B917E", "Vallejo-70.884": "#8C897A", "Vallejo-70.885": "#919B88",
+            "Vallejo-70.886": "#7A7F75", "Vallejo-70.887": "#5E5C49", "Vallejo-70.888": "#6B6F61",
+            "Vallejo-70.889": "#5E5340", "Vallejo-70.890": "#495841", "Vallejo-70.891": "#3D503E",
+            "Vallejo-70.892": "#5E5F43", "Vallejo-70.893": "#3C4838", "Vallejo-70.894": "#4E5741",
+            "Vallejo-70.895": "#495540", "Vallejo-70.896": "#3D4B3E", "Vallejo-70.897": "#414C38",
+            "Vallejo-70.898": "#283446", "Vallejo-70.899": "#2F3A4C", "Vallejo-70.900": "#34475D",
+            "Vallejo-70.901": "#496F95", "Vallejo-70.902": "#698AB0", "Vallejo-70.903": "#547291",
+            "Vallejo-70.904": "#6B7B8D", "Vallejo-70.905": "#8CA0B5", "Vallejo-70.906": "#6383AA",
+            "Vallejo-70.907": "#89AACD", "Vallejo-70.908": "#A3262A", "Vallejo-70.909": "#C9392D",
+            "Vallejo-70.910": "#E45A35", "Vallejo-70.911": "#EE7732", "Vallejo-70.912": "#E0954C",
+            "Vallejo-70.913": "#DFB85C", "Vallejo-70.914": "#CEAA5D", "Vallejo-70.915": "#E5B722",
+            "Vallejo-70.916": "#D5B875", "Vallejo-70.917": "#D4C5A9", "Vallejo-70.918": "#E0D5B6",
+            "Vallejo-70.919": "#FFFFFF", "Vallejo-70.920": "#4F5B4A", "Vallejo-70.921": "#555447",
+            "Vallejo-70.922": "#536144", "Vallejo-70.923": "#71705D", "Vallejo-70.924": "#515949",
+            "Vallejo-70.925": "#295390", "Vallejo-70.926": "#AB2024", "Vallejo-70.927": "#AF8C6C",
+            "Vallejo-70.928": "#E6CCB5", "Vallejo-70.929": "#B28266", "Vallejo-70.930": "#1F2A40",
+            "Vallejo-70.934": "#F3F3F3", "Vallejo-70.939": "#3B2C24", "Vallejo-70.940": "#6E543E",
+            "Vallejo-70.941": "#5E4A3A", "Vallejo-70.942": "#768C62", "Vallejo-70.943": "#5E666A",
+            "Vallejo-70.947": "#BA3735", "Vallejo-70.950": "#1E1E1E", "Vallejo-70.951": "#F5F5F5",
+            "Vallejo-70.952": "#EADE64", "Vallejo-70.953": "#EED261", "Vallejo-70.954": "#A2CA64",
+            "Vallejo-70.955": "#E8B499", "Vallejo-70.956": "#E28B3B", "Vallejo-70.957": "#BF3337",
+            "Vallejo-70.958": "#DA7B82", "Vallejo-70.959": "#6D4173", "Vallejo-70.960": "#3B7D98",
+            "Vallejo-70.961": "#619DCA", "Vallejo-70.962": "#3B5E82", "Vallejo-70.963": "#3B5E8D",
+            "Vallejo-70.964": "#2D4472", "Vallejo-70.965": "#273A5A", "Vallejo-70.966": "#327063",
+            "Vallejo-70.967": "#49553A", "Vallejo-70.968": "#325E3F", "Vallejo-70.969": "#418F49",
+            "Vallejo-70.970": "#2D6C3A", "Vallejo-70.971": "#6E886A", "Vallejo-70.972": "#7A9C84",
+            "Vallejo-70.973": "#8FB29B", "Vallejo-70.974": "#4E6A41", "Vallejo-70.975": "#4E6547",
+            "Vallejo-70.976": "#A9986B", "Vallejo-70.977": "#E5C881", "Vallejo-70.978": "#CB9F44",
+            "Vallejo-70.979": "#44593C", "Vallejo-70.980": "#2E3D33", "Vallejo-70.981": "#694A37",
+            "Vallejo-70.982": "#5C392D", "Vallejo-70.983": "#4D3C31", "Vallejo-70.984": "#4B3327",
+            "Vallejo-70.985": "#462A24", "Vallejo-70.986": "#624E3F", "Vallejo-70.987": "#766356",
+            "Vallejo-70.988": "#816E56", "Vallejo-70.989": "#9A9997", "Vallejo-70.990": "#AFB5B5",
+            "Vallejo-70.991": "#6E7376", "Vallejo-70.992": "#82878B", "Vallejo-70.993": "#CED1D3",
+            "Vallejo-70.994": "#494C4F", "Vallejo-70.995": "#3C4042", "Vallejo-70.996": "#C6AA68",
+            "Vallejo-70.997": "#C0C0C0", "Vallejo-70.998": "#AA885E", "Vallejo-70.999": "#C78D57",
+
+            // ==========================================
+            // [Vallejo - Model Air (71.xxx)] 從 PDF 重新萃取
+            // ==========================================
+            "Vallejo-71.001": "#FFFFFF", "Vallejo-71.002": "#FAD200", "Vallejo-71.003": "#C7252A",
+            "Vallejo-71.004": "#243E7A", "Vallejo-71.005": "#486178", "Vallejo-71.006": "#A7C177",
+            "Vallejo-71.007": "#5B7443", "Vallejo-71.008": "#7D93A9", "Vallejo-71.009": "#8E9E8D",
+            "Vallejo-71.010": "#4B5A42", "Vallejo-71.011": "#3D4A31", "Vallejo-71.012": "#445642",
+            "Vallejo-71.013": "#4E5A42", "Vallejo-71.014": "#546652", "Vallejo-71.015": "#4C5A44",
+            "Vallejo-71.016": "#3D4632", "Vallejo-71.017": "#3D5039", "Vallejo-71.018": "#2E4034",
+            "Vallejo-71.019": "#314A36", "Vallejo-71.020": "#45563E", "Vallejo-71.021": "#40513F",
+            "Vallejo-71.022": "#5A6D51", "Vallejo-71.023": "#717A57", "Vallejo-71.024": "#8B8766",
+            "Vallejo-71.025": "#9F8A58", "Vallejo-71.026": "#584A3B", "Vallejo-71.027": "#9A7B51",
+            "Vallejo-71.028": "#CBB78D", "Vallejo-71.029": "#624B35", "Vallejo-71.030": "#625041",
+            "Vallejo-71.031": "#847661", "Vallejo-71.032": "#6E5336", "Vallejo-71.033": "#C2AF76",
+            "Vallejo-71.034": "#C7AF8A", "Vallejo-71.035": "#574639", "Vallejo-71.036": "#553A30",
+            "Vallejo-71.037": "#7D614A", "Vallejo-71.038": "#846243", "Vallejo-71.039": "#634739",
+            "Vallejo-71.040": "#4B3E36", "Vallejo-71.041": "#5C4A3F", "Vallejo-71.042": "#443C37",
+            "Vallejo-71.043": "#51533E", "Vallejo-71.044": "#909485", "Vallejo-71.045": "#9A9991",
+            "Vallejo-71.046": "#99A1A1", "Vallejo-71.047": "#7E8588", "Vallejo-71.048": "#60666A",
+            "Vallejo-71.049": "#6B7277", "Vallejo-71.050": "#828D95", "Vallejo-71.051": "#6C7377",
+            "Vallejo-71.052": "#4E565C", "Vallejo-71.053": "#464D50", "Vallejo-71.054": "#363E48",
+            "Vallejo-71.055": "#43494D", "Vallejo-71.056": "#43484C", "Vallejo-71.057": "#1D1F20",
+            "Vallejo-71.062": "#C4C5C7", "Vallejo-71.063": "#C1C6CA", "Vallejo-71.064": "#BCC2C6",
+            "Vallejo-71.065": "#87929A", "Vallejo-71.066": "#C8B98B", "Vallejo-71.067": "#C23E30",
+            "Vallejo-71.068": "#C86A4C", "Vallejo-71.069": "#A54437", "Vallejo-71.070": "#852425",
+            "Vallejo-71.071": "#2A3A5D", "Vallejo-71.072": "#494E55", "Vallejo-71.073": "#3E4346",
+            "Vallejo-71.074": "#7A786A", "Vallejo-71.075": "#BEA884", "Vallejo-71.076": "#D5BC9D",
+            "Vallejo-71.077": "#463F33", "Vallejo-71.078": "#EBD871", "Vallejo-71.079": "#A08453",
+            "Vallejo-71.080": "#7C553B", "Vallejo-71.081": "#A87A4F", "Vallejo-71.082": "#E34937",
+            "Vallejo-71.083": "#C95337", "Vallejo-71.084": "#CA4630", "Vallejo-71.085": "#9C2623",
+            "Vallejo-71.086": "#BB302E", "Vallejo-71.087": "#2B406A", "Vallejo-71.088": "#3A557A",
+            "Vallejo-71.089": "#668BB2", "Vallejo-71.090": "#3C5E8D", "Vallejo-71.091": "#375486",
+            "Vallejo-71.092": "#475641", "Vallejo-71.093": "#576B4F", "Vallejo-71.094": "#68845B",
+            "Vallejo-71.095": "#719266", "Vallejo-71.096": "#46503A", "Vallejo-71.097": "#636E5D",
+            "Vallejo-71.101": "#8699AE", "Vallejo-71.102": "#A82924", "Vallejo-71.103": "#667D94",
+            "Vallejo-71.104": "#4C6B4B", "Vallejo-71.105": "#6B5C49", "Vallejo-71.106": "#677B8A",
+            "Vallejo-71.107": "#E4CF7E", "Vallejo-71.108": "#5B7999", "Vallejo-71.109": "#95A998",
+            "Vallejo-71.110": "#5A5D62", "Vallejo-71.111": "#768C9E", "Vallejo-71.112": "#7D7B67",
+            "Vallejo-71.113": "#2E3B4B", "Vallejo-71.114": "#8B867C", "Vallejo-71.115": "#79848C",
+            "Vallejo-71.116": "#66727D", "Vallejo-71.117": "#594F42", "Vallejo-71.118": "#868D93",
+            "Vallejo-71.119": "#F3EEDA", "Vallejo-71.120": "#72787E", "Vallejo-71.121": "#A2A6A6",
+            "Vallejo-71.122": "#928E7A", "Vallejo-71.123": "#44494C", "Vallejo-71.124": "#4F6A46",
+            "Vallejo-71.125": "#775743", "Vallejo-71.126": "#5E5848", "Vallejo-71.128": "#788795",
+            "Vallejo-71.137": "#6E8166", "Vallejo-71.138": "#BC8F53", "Vallejo-71.139": "#353934",
+            "Vallejo-71.244": "#DFCBA5", "Vallejo-71.245": "#66675E", "Vallejo-71.246": "#756348",
+            "Vallejo-71.247": "#A49971", "Vallejo-71.248": "#5C5040", "Vallejo-71.249": "#655644",
+            "Vallejo-71.250": "#856D47", "Vallejo-71.251": "#1E2225", "Vallejo-71.255": "#7DA5B3",
+            "Vallejo-71.256": "#538292", "Vallejo-71.257": "#77909C", "Vallejo-71.258": "#79878E",
+            "Vallejo-71.259": "#8F9AA3", "Vallejo-71.260": "#9CA5AC", "Vallejo-71.261": "#ADB5BC",
+            "Vallejo-71.262": "#6A777D", "Vallejo-71.263": "#3B4850", "Vallejo-71.264": "#6C665C",
+            "Vallejo-71.265": "#54594C", "Vallejo-71.266": "#3F483E", "Vallejo-71.267": "#676F6D",
+            "Vallejo-71.268": "#4A5250", "Vallejo-71.269": "#D13532", "Vallejo-71.270": "#DFD3B1",
+            "Vallejo-71.271": "#484D4F", "Vallejo-71.273": "#3C4B58", "Vallejo-71.274": "#677682",
+            "Vallejo-71.275": "#A4B3C0", "Vallejo-71.277": "#6C7278", "Vallejo-71.279": "#F1F2F3",
+            "Vallejo-71.285": "#3D4833", "Vallejo-71.286": "#505842", "Vallejo-71.287": "#464C42",
+            "Vallejo-71.288": "#283446", "Vallejo-71.289": "#364654", "Vallejo-71.290": "#6D543F",
+            "Vallejo-71.291": "#7F796C", "Vallejo-71.292": "#8C8877", "Vallejo-71.293": "#ABA692",
+            "Vallejo-71.294": "#3B4E3C", "Vallejo-71.296": "#384758", "Vallejo-71.298": "#76868C",
+            "Vallejo-71.299": "#576A7F", "Vallejo-71.300": "#6D5F46", "Vallejo-71.301": "#947657",
+            "Vallejo-71.302": "#9E7843", "Vallejo-71.303": "#B58F54", "Vallejo-71.304": "#A88E64",
+            "Vallejo-71.305": "#6B5D4E", "Vallejo-71.306": "#62738B", "Vallejo-71.307": "#A4ABB5",
+            "Vallejo-71.308": "#788796", "Vallejo-71.309": "#2E3A47", "Vallejo-71.310": "#A93E3A",
+            "Vallejo-71.311": "#762D2C", "Vallejo-71.312": "#BF9962", "Vallejo-71.313": "#444641",
+            "Vallejo-71.315": "#2A2B2E", "Vallejo-71.316": "#2C3848", "Vallejo-71.317": "#717A86",
+            "Vallejo-71.318": "#868C92", "Vallejo-71.321": "#7D8D77", "Vallejo-71.323": "#A38C68",
+            "Vallejo-71.324": "#4D5943", "Vallejo-71.327": "#716B52", "Vallejo-71.329": "#536852",
+            "Vallejo-71.330": "#495A48", "Vallejo-71.331": "#227568", "Vallejo-71.332": "#6C523F",
+            "Vallejo-71.333": "#AFA382", "Vallejo-71.334": "#969680", "Vallejo-71.335": "#5C6A5D",
+            "Vallejo-71.336": "#70736C", "Vallejo-71.338": "#687373", "Vallejo-71.340": "#96A297",
+            "Vallejo-71.341": "#505E4F", "Vallejo-71.342": "#8AB4CA", "Vallejo-71.343": "#5E584A",
+            "Vallejo-71.344": "#544A41", "Vallejo-71.345": "#91918B", "Vallejo-71.346": "#626562",
+            "Vallejo-71.347": "#7A786C", "Vallejo-71.348": "#4B4D49", "Vallejo-71.400": "#6B88A8",
+
+            // ==========================================
+            // [Vallejo - 溶劑、底漆、輔助用品 (對應您的 CSV)]
+            // ==========================================
+            "Vallejo-70.510": "#FAFAFA", // 亮光漆
+            "Vallejo-70.520": "#F4F4F4", // 消光漆
+            "Vallejo-70.522": "#F4F4F4", // 半光漆
+            "Vallejo-70.600": "#FFFFFF", // 白底漆
+            "Vallejo-70.601": "#808080", // 灰底漆
+            "Vallejo-70.602": "#1E1E1E", // 黑底漆
+            "Vallejo-70.603": "#44494C", // 德國灰底漆
+            "Vallejo-70.604": "#9F8A58", // 暗黃底漆
+            "Vallejo-71.161": "#F1F5F9", // Airbrush Thinner
+            "Vallejo-71.199": "#F1F5F9", // Airbrush Cleaner
+            "Vallejo-71.261": "#F1F5F9", // Airbrush Thinner
+            "Vallejo-71.262": "#F1F5F9", // Flow Improver
+            "Vallejo-71.361": "#F1F5F9", // Airbrush Thinner
+            "Vallejo-71.362": "#F1F5F9", // Airbrush Flow Improver
+            "Vallejo-71.562": "#F1F5F9", // Airbrush Flow Improver
+            "Vallejo-76.550": "#F1F5F9", // Chipping Medium
+            "Vallejo-77.660": "#0A0A0A", // Gloss Black Primer
+
+            // [Ammo by Mig]
+            "Ammo-A.MIG-202": "#755541", "Ammo-A.MIG-203": "#3c4632", "Ammo-A.MIG-210": "#799071",
+            "Ammo-A.MIG-242": "#e0dfd6", "Ammo-A.MIG-243": "#38433c", "Ammo-A.MIG-244": "#515f43",
+            "Ammo-A.MIG-046": "#1e1e1e", "Ammo-A.MIG-047": "#ffffff", "Ammo-A.MIG-048": "#fcd511",
+
+            // [Tamiya]
             "Tamiya-XF-1": "#1e1e1e", "Tamiya-XF-2": "#f5f5f5", "Tamiya-XF-16": "#c0c0c0",
-            "Tamiya-XF-56": "#808080", "Tamiya-XF-63": "#42474a", "Tamiya-XF-84": "#525252",
-            "Tamiya-XF-85": "#2f2f2f",
+            "Tamiya-XF-52": "#71523c", "Tamiya-XF-56": "#808080", "Tamiya-XF-63": "#44494c",
+            "Tamiya-XF-84": "#525252", "Tamiya-XF-85": "#2f2f2f",
+
+            // [Modo]
             "Modo-A-001": "#ffffff", "Modo-A-002": "#1e1e1e", "Modo-A-003": "#ff0000",
             "Modo-A-004": "#0000ff", "Modo-A-005": "#ffd700", "Modo-AK11": "#cbd5e1",
+            
+            // [9527]
             "9527-P-04": "#000000"
         };
-        // 確保使用者修改過的手動顏色不會被覆蓋，優先權高於預設色碼庫
+
         let savedColors = JSON.parse(localStorage.getItem(COLOR_CACHE_KEY)) || {};
         let colorCache = { ...defaultColorCache, ...savedColors };
 
-        // 專業的 CSV 解析器：能處理格子內有逗號、有換行的複雜情況
         function parseCSV(text) {
             const result = []; let row = []; let cell = ""; let inQuotes = false;
             for (let i = 0; i < text.length; i++) {
@@ -261,12 +410,10 @@
         function toggleDrawer() { const d = document.getElementById('drawer'), o = document.getElementById('drawer-overlay'); if (d.classList.contains('closed')) { d.classList.remove('closed'); o.classList.remove('hidden'); setTimeout(() => o.classList.add('opacity-40'), 10); } else { closeDrawer(); } }
         function closeDrawer() { const d = document.getElementById('drawer'), o = document.getElementById('drawer-overlay'); d.classList.add('closed'); o.classList.remove('opacity-40'); setTimeout(() => o.classList.add('hidden'), 300); }
         
-        // 開啟新增視窗時，動態載入現有廠牌到下拉選單中
         function openAddModal() { 
             const brandList = document.getElementById('brand-list');
             const uniqueBrands = [...new Set(paints.map(p => p.brand).filter(b => b))].sort();
             brandList.innerHTML = uniqueBrands.map(b => `<option value="${b}">`).join('');
-            
             document.getElementById('add-modal').classList.remove('hidden'); 
             closeDrawer(); 
         }
@@ -274,15 +421,8 @@
 
         function handleAddPaint(e) {
             e.preventDefault(); const fd = new FormData(e.target);
-            const b = fd.get('brand').trim(), c = fd.get('code').trim(), fs = fd.get('stdColor').trim(), usage = fd.get('usage').trim();
-            // 將用途欄位也加入新增的資料物件中
-            const n = { id: Date.now(), stdColor: fs, brand: b, series: "", code: c, name: fd.get('name').trim(), qty: parseInt(fd.get('qty')) || 0, usage: usage, others: "", colorFamily: fd.get('colorFamily') };
-            paints.unshift(n); saveAll(); closeAddModal(); 
-            // 由於移除了 AI 搜尋，如果色碼庫沒有該顏色，提示使用者手動設定
-            if(!colorCache[b+'-'+c] && !colorCache[fs.split(/[\n\r]+/)[0].replace(/\s+/g, '').toUpperCase()]) {
-                alert("已新增漆料！若顏色未顯示，請點選色塊手動設定。");
-            }
-            e.target.reset(); // 清空表單
+            const n = { id: Date.now(), stdColor: fd.get('stdColor').trim(), brand: fd.get('brand').trim(), series: "", code: fd.get('code').trim(), name: fd.get('name').trim(), qty: parseInt(fd.get('qty')) || 0, usage: fd.get('usage').trim(), others: "", colorFamily: fd.get('colorFamily') };
+            paints.unshift(n); saveAll(); closeAddModal(); e.target.reset();
         }
 
         function deletePaint(id) { if (confirm("確定刪除此漆料？")) { paints = paints.filter(p => p.id !== id); saveAll(); } }
@@ -294,72 +434,34 @@
             const r = new FileReader();
             r.onload = (ev) => {
                 const rows = parseCSV(ev.target.result);
-                // 過濾標題行與空行，並移除多餘引號
-                const newData = rows.slice(1).filter(cols => cols.length > 1).map(cols => {
+                paints = rows.slice(1).filter(cols => cols.length > 1).map(cols => {
                     const clean = (str) => (str || "").replace(/^"|"$/g, '').trim();
-                    return {
-                        id: Math.random(), 
-                        stdColor: clean(cols[0]), 
-                        brand: clean(cols[1]) || "未知", 
-                        series: clean(cols[2]), 
-                        code: clean(cols[3]), 
-                        name: clean(cols[4]), 
-                        qty: parseInt(clean(cols[5])) || 0, 
-                        usage: clean(cols[6]), 
-                        others: clean(cols[7]), 
-                        colorFamily: clean(cols[8]) || "其他"
-                    };
+                    return { id: Math.random(), stdColor: clean(cols[0]), brand: clean(cols[1]) || "未知", series: clean(cols[2]), code: clean(cols[3]), name: clean(cols[4]), qty: parseInt(clean(cols[5])) || 0, usage: clean(cols[6]), others: clean(cols[7]), colorFamily: clean(cols[8]) || "其他" };
                 });
-                paints = newData; 
-                saveAll(); 
-                closeDrawer();
-                alert(`匯入成功！共載入 ${paints.length} 筆資料。`);
+                saveAll(); closeDrawer(); alert(`匯入成功！共載入 ${paints.length} 筆。`);
             };
             r.readAsText(f, document.getElementById('encoding-selector').value);
-            e.target.value = ''; // 允許重複上傳相同檔案
         }
 
         function exportCSV() {
-            if(paints.length === 0) return alert("目前沒有資料可以匯出。");
             const h = "\ufeff標準色,廠牌,系列,編號,名稱,數量,用途,其它色號,色系\n";
-            const b = paints.map(p => `"${p.stdColor.replace(/"/g, '""')}","${p.brand}","${p.series}","${p.code}","${p.name.replace(/"/g, '""')}",${p.qty},"${(p.usage || '').replace(/"/g, '""')}","${p.others}","${p.colorFamily}"`).join("\n");
-            const bl = new Blob([h + b], { type: "text/csv;charset=utf-8;" });
-            const a = document.createElement("a"); a.href = URL.createObjectURL(bl); a.download = `模型漆資料備份_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+            const b = paints.map(p => `"${p.stdColor}","${p.brand}","${p.series}","${p.code}","${p.name}",${p.qty},"${(p.usage||'')}","${p.others}","${p.colorFamily}"`).join("\n");
+            const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([h + b], { type: "text/csv;charset=utf-8;" })); a.download = `模型漆備份.csv`; a.click();
         }
 
-        function clearStorage() {
-            if (confirm("警告：這將徹底清空您的資料庫！\n(建議先執行「匯出備份」)\n\n確定要清空嗎？")) {
-                localStorage.removeItem(STORAGE_KEY);
-                window.location.reload();
-            }
-        }
+        function clearStorage() { if (confirm("確定清空所有資料嗎？")) { localStorage.removeItem(STORAGE_KEY); window.location.reload(); } }
 
         function refreshUI() {
-            const welcomeState = document.getElementById('welcome-state');
-            const mainContent = document.getElementById('main-content');
-            
-            if (paints.length === 0) {
-                welcomeState.classList.remove('hidden');
-                mainContent.classList.add('hidden');
-                return;
-            } else {
-                welcomeState.classList.add('hidden');
-                mainContent.classList.remove('hidden');
-            }
-
-            const bs = [...new Set(paints.map(p => p.brand))].sort();
-            const fs = [...new Set(paints.map(p => p.colorFamily))].sort();
+            const welcome = document.getElementById('welcome-state'), main = document.getElementById('main-content');
+            if (paints.length === 0) { welcome.classList.remove('hidden'); main.classList.add('hidden'); return; }
+            welcome.classList.add('hidden'); main.classList.remove('hidden');
+            const bs = [...new Set(paints.map(p => p.brand))].sort(), fs = [...new Set(paints.map(p => p.colorFamily))].sort();
             const bf = document.getElementById('brand-filter'), cf = document.getElementById('color-filter');
-            
-            // 保存當前選擇
-            const curBf = bf.value; const curCf = cf.value;
-            
+            const curB = bf.value, curC = cf.value;
             bf.innerHTML = '<option value="">所有品牌</option>'; cf.innerHTML = '<option value="">所有分類</option>';
             bs.forEach(b => bf.innerHTML += `<option value="${b}">${b}</option>`);
             fs.forEach(f => cf.innerHTML += `<option value="${f}">${f}</option>`);
-            
-            bf.value = curBf; cf.value = curCf;
-            
+            bf.value = curB; cf.value = curC;
             render();
         }
 
@@ -372,45 +474,45 @@
                 const s = `${p.brand} ${p.code} ${p.name} ${p.stdColor} ${p.usage}`.toLowerCase();
                 return s.includes(t) && (!bf || p.brand === bf) && (!cf || p.colorFamily === cf);
             });
-            
             document.getElementById('total-count').textContent = filtered.length;
-            
             const stats = {}; filtered.forEach(p => stats[p.brand] = (stats[p.brand]||0)+1);
-            document.getElementById('brand-stats').innerHTML = Object.entries(stats).sort((a,b)=>b[1]-a[1]).map(([b,c])=>`<div class="bg-white px-3 py-1 rounded-xl border border-slate-100 flex items-center gap-2 shadow-sm shrink-0 font-bold"><span class="text-[10px] text-slate-400 uppercase">${b}</span><span class="text-sm text-slate-700">${c}</span></div>`).join('');
-            
+            document.getElementById('brand-stats').innerHTML = Object.entries(stats).sort((a,b)=>b[1]-a[1]).map(([b,c])=>`<div class="bg-white px-2 py-1 rounded-lg border border-slate-100 flex items-center gap-1 shadow-sm shrink-0 font-bold"><span class="text-[8px] text-slate-400 uppercase">${b}</span><span class="text-xs text-slate-700">${c}</span></div>`).join('');
             const g = document.getElementById('paint-grid');
             if (filtered.length === 0) { g.innerHTML = ''; document.getElementById('empty-state').classList.remove('hidden'); return; }
             document.getElementById('empty-state').classList.add('hidden');
-            
             g.innerHTML = filtered.map(p => {
-                const bk = `${p.brand}-${p.code}`;
-                const bh = colorCache[bk];
-                
-                // 強化色號萃取：取第一行、去頭尾空白、轉大寫，並移除中間的空格(如 FS 36440 -> FS36440) 確保精準比對
-                const cleanStdColor = p.stdColor ? p.stdColor.split(/[\n\r]+/)[0].replace(/\s+/g, '').toUpperCase() : '';
-                const fh = colorCache[cleanStdColor];
-                
-                // 處理換行的標準色號顯示
-                const formattedStdColor = p.stdColor ? p.stdColor.replace(/[\n\r]+/g, ' / ') : '';
-                
+                const bk = `${p.brand}-${p.code}`, bh = colorCache[bk];
+                const cleanFS = p.stdColor ? p.stdColor.split(/[\n\r]+/)[0].replace(/\s+/g, '').toUpperCase() : '';
+                const fh = colorCache[cleanFS];
                 return `
-                <div class="paint-card bg-white rounded-3xl border border-slate-200 p-6 flex flex-col shadow-sm relative">
-                    <button onclick="deletePaint(${p.id})" class="absolute top-3 right-3 p-1 text-slate-200 hover:text-red-500 transition-all font-bold">✕</button>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex-1 pr-6">
-                            <div class="flex items-center gap-2 mb-1 font-black"><span class="text-[10px] bg-slate-800 text-white px-1.5 py-0.5 rounded uppercase">${p.brand}</span></div>
-                            <div class="flex items-center"><h3 class="text-xl font-black text-slate-800 truncate">${p.code}</h3><span class="brand-swatch" style="background-color: ${bh || '#f8fafc'}" onclick="pickColor('${bk}')" title="點選修改品牌漆色">${bh ? '' : '+'}</span></div>
-                            <p class="text-slate-500 text-xs h-10 overflow-hidden mt-1 font-medium leading-tight">${p.name}</p>
+                <div class="paint-card bg-white rounded-2xl border border-slate-200 p-3.5 flex flex-col shadow-sm relative overflow-hidden">
+                    <button onclick="deletePaint(${p.id})" class="absolute top-2 right-2 text-slate-300 hover:text-red-500 font-bold p-1">✕</button>
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-1.5 mb-1">
+                                <span class="text-[9px] font-black bg-slate-800 text-white px-1.5 py-0.5 rounded uppercase tracking-tighter">${p.brand}</span>
+                                <span class="tag-${p.colorFamily} px-2 py-0.5 rounded-full text-[9px] font-black shadow-sm">${p.colorFamily}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <h3 class="text-lg font-black text-slate-800 leading-none">${p.code}</h3>
+                                <span class="brand-swatch" style="background-color: ${bh || '#f8fafc'}" onclick="pickColor('${bk}')" title="點擊修改顏色">${bh ? '' : '+'}</span>
+                            </div>
                         </div>
-                        <span class="tag-${p.colorFamily} px-3 py-1 rounded-full text-[10px] font-black shadow-sm">${p.colorFamily}</span>
                     </div>
-                    <div class="space-y-2 mb-6">
-                        ${p.stdColor ? `<div class="bg-slate-50 p-3 rounded-2xl flex items-center justify-between min-h-[56px] border border-slate-100"><div class="flex-1 pr-2"><span class="text-[10px] text-slate-400 block font-bold uppercase">標準色</span><span class="text-[11px] text-slate-700 font-mono break-all">${formattedStdColor}</span></div><span class="fs-swatch" style="background-color: ${fh || '#f1f5f9'}" onclick="pickColor('${cleanStdColor}')" title="點選修改 FS 顏色"></span></div>` : ''}
-                        ${p.usage ? `<p class="px-1 text-xs text-slate-500 line-clamp-2 italic leading-relaxed font-medium">${p.usage}</p>` : ''}
+                    <div class="mb-3">
+                        <p class="text-slate-600 text-sm font-bold leading-snug mb-1.5">${p.name}</p>
+                        ${p.usage ? `<p class="text-[11px] text-slate-400 line-clamp-1 italic font-medium"># ${p.usage}</p>` : ''}
                     </div>
-                    <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
-                        <div class="flex items-center bg-slate-100 rounded-xl p-1"><button onclick="updateQty(${p.id}, -1)" class="w-10 h-10 rounded-lg bg-white shadow-sm font-bold active:scale-95">-</button><span class="px-5 font-black text-slate-700 min-w-[44px] text-center">${p.qty}</span><button onclick="updateQty(${p.id}, 1)" class="w-10 h-10 rounded-lg bg-white shadow-sm font-bold active:scale-95">+</button></div>
-                        <div class="text-[10px] text-slate-300 font-mono">${p.others ? `REF:${p.others}` : ''}</div>
+                    <div class="space-y-2 mt-auto">
+                        ${p.stdColor ? `<div class="bg-slate-50 p-2 rounded-lg flex items-center justify-between border border-slate-100"><div class="flex items-center gap-2"><span class="text-[9px] text-slate-400 font-bold uppercase">FS</span><span class="text-[11px] text-slate-700 font-mono font-bold">${cleanFS}</span></div><span class="fs-swatch" style="background-color: ${fh || '#f1f5f9'}" onclick="pickColor('${cleanFS}')" title="點擊修改顏色"></span></div>` : ''}
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center bg-slate-100 rounded-lg p-0.5">
+                                <button onclick="updateQty(${p.id}, -1)" class="w-8 h-8 rounded-md bg-white shadow-sm font-bold active:bg-red-50">-</button>
+                                <span class="px-3 font-black text-slate-700 text-sm min-w-[32px] text-center">${p.qty}</span>
+                                <button onclick="updateQty(${p.id}, 1)" class="w-8 h-8 rounded-md bg-white shadow-sm font-bold active:bg-green-50">+</button>
+                            </div>
+                            <span class="text-[9px] text-slate-300 font-mono font-bold">${p.others ? 'REF: ' + p.others : ''}</span>
+                        </div>
                     </div>
                 </div>`;
             }).join('');
